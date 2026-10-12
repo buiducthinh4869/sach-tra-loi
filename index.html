@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Sách Trả Lời</title>
+<meta name="description" content="Nghĩ một câu hỏi, mở sách ra trang bất kỳ và nhận một câu trả lời.">
+<meta property="og:title" content="Sách Trả Lời">
+<meta property="og:description" content="Nghĩ một câu hỏi, mở sách ra trang bất kỳ và nhận một câu trả lời.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
+<style>
+/* Layout: one centred cloth-bound book that opens into a two-page spread; chapters and question above, history below. */
+:root{
+  --bg:#e7e9ee; --fg:#1d2233; --muted:#5d6478;
+  --cloth:#26304f; --cloth-2:#1a2139; --foil:#c9a24a;
+  --paper:#f7f6f1; --paper-edge:#d9d6cb; --ink:#232634; --accent:#8a2f3b;
+  --display:"Literata", "Noto Serif", Georgia, serif;
+  --ui:"Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12151f; --fg:#e4e6ee; --muted:#9aa1b5;
+  --cloth:#2c375c; --cloth-2:#1c2441; --foil:#d8b25c;
+  --paper:#ece9df; --paper-edge:#bdb8a8; --ink:#232634; --accent:#9c3542; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151f; --fg:#e4e6ee; --muted:#9aa1b5;
+  --cloth:#2c375c; --cloth-2:#1c2441; --foil:#d8b25c;
+  --paper:#ece9df; --paper-edge:#bdb8a8; --ink:#232634; --accent:#9c3542; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:16px;line-height:1.6}
+.wrap{max-width:820px;margin:0 auto;padding-inline:16px;padding-block:32px 48px;display:flex;flex-direction:column;align-items:center;gap:26px}
+header{text-align:center;display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,6.4vw,48px);line-height:1.1;margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:52ch;margin:0;font-size:15px}
+
+/* chapters */
+.chapters{width:100%;max-width:640px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.chips{width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.chip{font:inherit;text-align:left;padding:10px 12px;border:1px solid color-mix(in srgb,var(--muted) 40%,transparent);border-radius:6px;
+  background:color-mix(in srgb,var(--paper) 55%,var(--bg));color:var(--fg);cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;transition:border-color .15s,background .15s}
+.chip .n{font-family:var(--display);font-size:16px;font-weight:600;line-height:1.3}
+.chip .c{font-size:12px;color:var(--muted)}
+.chip:hover{border-color:var(--foil)}
+.chip[aria-pressed="true"]{border:1px solid var(--foil);box-shadow:inset 0 0 0 1px var(--foil);background:color-mix(in srgb,var(--foil) 14%,var(--bg))}
+.chip:focus-visible{outline:2px solid var(--foil);outline-offset:2px}
+.guess{font-size:13px;color:var(--muted);min-height:1.3em;text-align:center}
+
+.ask{width:100%;max-width:560px;display:flex;flex-direction:column;gap:8px}
+.ask input{font:inherit;font-family:var(--display);font-size:18px;padding:10px 2px;border:0;border-bottom:1px solid var(--muted);background:transparent;color:var(--fg);outline:none}
+.ask input:focus-visible{border-bottom-color:var(--foil)}
+
+/* Book */
+.stage{width:100%;display:flex;justify-content:center;perspective:1800px}
+.book{position:relative;width:min(100%,640px);aspect-ratio:1.45;max-width:100%}
+.cover{position:absolute;inset:0 25%;border-radius:4px 10px 10px 4px;
+  background:linear-gradient(90deg,var(--cloth-2) 0 6%,var(--cloth) 9% 100%);
+  box-shadow:0 18px 40px -18px rgba(10,14,30,.55), inset 0 0 0 1px rgba(255,255,255,.04);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--foil);
+  cursor:pointer;transition:transform .5s ease, opacity .4s ease; border:0; font:inherit;touch-action:none;user-select:none;-webkit-user-select:none}
+.cover:hover{transform:translateY(-3px)}
+.cover.holding{transform:scale(.985)}
+.cover:focus-visible{outline:2px solid var(--foil);outline-offset:4px}
+.cover .frame{position:absolute;inset:14px 14px 14px 22px;border:1px solid var(--foil);opacity:.55;border-radius:2px}
+.cover .t{font-family:var(--display);font-size:clamp(20px,4vw,28px);font-weight:600;letter-spacing:.02em}
+.cover .s{font-size:11px;letter-spacing:.22em;text-transform:uppercase;opacity:.85}
+.cover .ch{font-family:var(--display);font-size:15px;opacity:.95}
+.cover .mark{width:34px;height:34px;border:1px solid var(--foil);transform:rotate(45deg);opacity:.8;transition:background .2s}
+.cover.holding .mark{background:color-mix(in srgb,var(--foil) 35%,transparent)}
+.cover .bar{position:absolute;left:22px;right:14px;bottom:24px;height:1px;background:color-mix(in srgb,var(--foil) 25%,transparent)}
+.cover .bar i{display:block;height:100%;width:0;background:var(--foil)}
+.cover.holding .bar i{width:100%;transition:width var(--hold,900ms) linear}
+
+.spread{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;border-radius:6px;
+  background:var(--paper);box-shadow:0 22px 50px -22px rgba(10,14,30,.6);opacity:0;pointer-events:none;transition:opacity .35s ease}
+.spread::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:40px;transform:translateX(-50%);
+  background:linear-gradient(90deg,transparent,rgba(0,0,0,.09) 45%,rgba(0,0,0,.14) 50%,rgba(0,0,0,.09) 55%,transparent);pointer-events:none}
+.spread::after{content:"";position:absolute;inset:auto 6px -5px;height:6px;border-radius:0 0 6px 6px;background:var(--paper-edge);z-index:-1}
+.book.open .cover{opacity:0;pointer-events:none;transform:scale(.97)}
+.book.open .spread{opacity:1;pointer-events:auto}
+.page{position:relative;padding:8% 9%;display:flex;flex-direction:column;justify-content:center;align-items:center;color:var(--ink);min-width:0}
+.page.left{border-radius:6px 0 0 6px}
+.page .folio{position:absolute;bottom:6%;font-family:var(--ui);font-size:13px;color:#6b6e7a;font-variant-numeric:tabular-nums}
+.page.left .folio{left:9%} .page.right .folio{right:9%}
+.page .runhead{position:absolute;top:6%;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b6e7a}
+.orn{font-family:var(--display);color:var(--accent);font-size:22px;letter-spacing:.4em}
+.left .q{font-family:var(--display);font-style:italic;font-size:clamp(14px,2vw,17px);line-height:1.45;color:#4b4e5c;text-align:center;text-wrap:balance;margin-top:12px;max-width:24ch}
+.answer{font-family:var(--display);font-weight:600;font-size:clamp(18px,3vw,26px);line-height:1.32;text-align:center;text-wrap:balance;margin:0;transition:opacity .25s ease}
+.answer.fade{opacity:0}
+.seal{position:absolute;top:7%;right:8%;width:38px;height:38px;border:2px solid var(--accent);color:var(--accent);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:12px;line-height:1;transform:rotate(-8deg);opacity:.85;text-align:center}
+.lucky{position:absolute;bottom:6%;left:9%;font-size:12px;color:#6b6e7a;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+
+/* flipping leaf */
+.leaf{position:absolute;top:0;bottom:0;left:50%;width:50%;transform-origin:left center;background:var(--paper);
+  border-radius:0 6px 6px 0;box-shadow:inset 8px 0 14px -10px rgba(0,0,0,.25);pointer-events:none}
+.leaf.go{animation:flip .26s ease-in forwards}
+@keyframes flip{to{transform:rotateY(-180deg);filter:brightness(.88)}}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+button.btn{font:inherit;font-weight:500;font-size:14px;padding:10px 18px;border-radius:999px;cursor:pointer;border:1px solid var(--fg);background:transparent;color:var(--fg)}
+button.btn.primary{background:var(--fg);color:var(--bg)}
+button.btn:hover{opacity:.85}
+button.btn:focus-visible,button.link:focus-visible{outline:2px solid var(--foil);outline-offset:3px}
+button.btn:disabled{opacity:.4;cursor:default}
+.tools{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+button.link{font:inherit;font-size:13px;border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 0;border-bottom:1px dotted var(--muted)}
+button.link:hover{color:var(--fg)}
+
+.log{width:100%;max-width:560px;display:flex;flex-direction:column;gap:6px}
+.loghead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.log h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0 0 4px}
+.log ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.log li{display:grid;grid-template-columns:76px 1fr;gap:12px;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--muted) 30%,transparent)}
+.log .pn{font-family:var(--ui);font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1.3}
+.log .pn small{display:block;font-family:var(--ui);font-size:11px}
+.log .qq{color:var(--muted);font-size:13px;font-style:italic}
+.log .aa{font-family:var(--display);font-size:16px;font-weight:600;line-height:1.4}
+.log li>div{min-width:0}
+.note{font-size:13px;color:var(--muted);text-align:center;max-width:56ch}
+
+@media (max-width:520px){
+  .book{aspect-ratio:.72}
+  .cover{inset:0 8%}
+  .spread{grid-template-columns:1fr}
+  .spread::before{display:none}
+  .page.left{display:none}
+  .page.right{border-radius:6px}
+  .leaf{left:0;width:100%;border-radius:6px}
+}
+@media (prefers-reduced-motion:reduce){
+  .leaf.go{animation:none;opacity:0}
+  .cover,.spread,.answer{transition:none}
+  .cover.holding .bar i{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Bibliomancy · bói bằng sách</span>
+    <h1>Sách Trả Lời</h1>
+    <p class="lede">Chọn một chương, nghĩ thật rõ về câu hỏi của bạn. Giữ ngón tay trên bìa sách để tập trung, rồi buông ra khi sách mở.</p>
+  </header>
+
+  <div class="chapters">
+    <span class="lbl" id="chLbl">Chọn chương</span>
+    <div class="chips" id="chips" role="group" aria-labelledby="chLbl"></div>
+    <div class="guess" id="guess" aria-live="polite"></div>
+  </div>
+
+  <div class="ask">
+    <label class="lbl" for="q">Câu hỏi của bạn (có thể chỉ nghĩ thầm)</label>
+    <input id="q" type="text" maxlength="120" placeholder="Có nên nhắn tin cho người ấy tối nay không?" autocomplete="off">
+  </div>
+
+  <div class="stage">
+    <div class="book" id="book">
+      <button class="cover" id="cover" aria-label="Mở sách">
+        <span class="frame" aria-hidden="true"></span>
+        <span class="mark" aria-hidden="true"></span>
+        <span class="t">Sách Trả Lời</span>
+        <span class="ch" id="coverCh">Tổng hợp</span>
+        <span class="s" id="coverHint">Giữ để tập trung</span>
+        <span class="bar" aria-hidden="true"><i></i></span>
+      </button>
+      <div class="spread" id="spread" aria-live="polite">
+        <div class="page left">
+          <span class="runhead" id="runL">Chương</span>
+          <span class="orn">✦ ✦ ✦</span>
+          <p class="q" id="qShow">Câu hỏi được giữ trong im lặng.</p>
+          <span class="folio" id="folioL">—</span>
+        </div>
+        <div class="page right">
+          <span class="seal" id="seal">Tổng</span>
+          <p class="answer" id="answer">—</p>
+          <span class="lucky" id="lucky"></span>
+          <span class="folio" id="folioR">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn primary" id="again">Mở trang khác</button>
+    <button class="btn" id="daily">Trang của hôm nay</button>
+    <button class="btn" id="close">Gập sách</button>
+  </div>
+  <div class="tools">
+    <button class="link" id="copy">Chép câu trả lời</button>
+    <button class="link" id="sound" aria-pressed="true">Tiếng lật trang: bật</button>
+  </div>
+
+  <section class="log" id="logWrap" hidden>
+    <div class="loghead"><h2>Những trang đã mở</h2><button class="link" id="clear">Xóa</button></div>
+    <ol id="log"></ol>
+  </section>
+
+  <p class="note" id="note">Mỗi chương là một cuốn sách riêng, mỗi trang cố định một câu trả lời. Trang của hôm nay giữ nguyên cả ngày. Đây là trò chơi cho vui, không phải lời khuyên.</p>
+</div>
+
+<script>
+/* ---------- Answer bank ---------- */
+const VERDICTS=["Có.","Không.","Chưa phải lúc.","Có thể.","Rất có khả năng.","Đừng vội.","Có, nếu bạn chủ động.","Khó nói lúc này.","Mọi dấu hiệu đều tốt.","Không như bạn mong, nhưng ổn."];
+
+const BANK={
+tinh:{name:"Tình duyên",seal:"Duyên",
+advice:["Hãy nói thật cảm xúc của mình.","Hỏi thẳng, đừng đoán.","Để ý hành động hơn lời nói.","Gửi tin nhắn đó, nhưng ngắn thôi.","Đừng nhắn lúc nửa đêm.","Hẹn gặp trực tiếp thay vì nhắn tin.","Cho người ấy thêm thời gian.","Cho chính mình thêm thời gian.","Đừng so sánh với người cũ.","Lắng nghe nhiều hơn giải thích.","Một bữa tối sẽ giải quyết nhiều chuyện.","Đừng để tự ái quyết định.","Nhớ lại lý do bạn bắt đầu.","Hãy hỏi người ấy muốn gì.","Đừng diễn, hãy là chính mình.","Một lời xin lỗi chân thành là đủ.","Đừng kể chuyện này với quá nhiều người.","Hỏi ý một người bạn hiểu cả hai.","Quan sát cách người ấy đối xử với người khác.","Đừng hy sinh điều bạn coi trọng nhất.","Đặt ranh giới rõ ràng.","Bắt đầu bằng một câu hỏi đơn giản.","Chủ động một lần xem sao.","Đừng đọc lại tin nhắn cũ nữa.","Tặng một món quà nhỏ, không cần dịp.","Nói lời cảm ơn vì những điều nhỏ.","Đi đâu đó mới cùng nhau.","Đừng ép mọi thứ phải rõ ràng ngay.","Hãy rõ ràng với chính mình trước.","Thôi kiểm tra trạng thái online của người ấy.","Bớt nghĩ về kịch bản xấu nhất.","Tin vào điều bạn thấy, không phải điều bạn mong.","Học cách nói không.","Nhường một bước.","Giữ lời hứa nhỏ nhất.","Hỏi về ngày của người ấy và thực sự nghe.","Đừng biến chuyện nhỏ thành trận chiến.","Hãy để nỗi nhớ nói hộ.","Viết ra điều bạn muốn ở một mối quan hệ.","Đừng quên những người đã thương bạn sẵn."],
+solo:["Người ấy cũng đang nghĩ về bạn.","Người phù hợp không khiến bạn phải đoán mãi.","Duyên đến muộn nhưng đến thật.","Đừng chờ tin nhắn đó nữa.","Đây là lúc nhắn trước.","Một cuộc gặp tình cờ sắp xảy ra.","Có người đang để ý bạn mà bạn chưa nhận ra.","Hãy để chuyện cũ khép lại.","Mối quan hệ này cần một cuộc nói chuyện thật lòng.","Yêu bản thân trước đã.","Bạn không cần ai đó để trọn vẹn.","Có, nếu cả hai cùng muốn.","Người không chọn bạn đã giúp bạn một việc.","Hãy hẹn cà phê.","Rung động là thật, đừng phủ nhận.","Đừng đánh đổi bình yên lấy cảm giác hồi hộp.","Ghen tuông lúc này không giúp gì.","Cứ thả thính nhẹ nhàng.","Cơ hội có, nhưng bạn phải bước ra ngoài.","Người cũ không phải câu trả lời.","Người cũ là một bài học tốt.","Lần này hãy chậm lại.","Bạn đang yêu một hình ảnh, hãy gặp con người thật.","Thật lòng là chiến lược duy nhất.","Một bông hoa không bao giờ thừa.","Đừng hỏi bạn bè, hỏi chính người ấy.","Chuyện này đáng để cố gắng.","Chuyện này đã đủ cố gắng rồi.","Quan tâm đều đặn thắng lời hứa lớn.","Tình yêu cũng cần lịch hẹn.","Hãy cười nhiều hơn khi ở cạnh nhau.","Khoảng cách chỉ là con số.","Khoảng cách đang nói điều gì đó.","Đừng nhắn tin khi đang giận.","Một chuyến đi sẽ làm rõ mọi chuyện.","Bạn xứng đáng được chọn một cách rõ ràng.","Mập mờ không phải là yêu.","Hãy mở lòng thêm một chút.","Đóng bớt cửa sổ lại một chút.","Người ấy cần sự kiên nhẫn của bạn.","Người ấy cần bạn nói ra.","Mùa này hợp để bắt đầu.","Mùa này hợp để chữa lành.","Đã đến lúc gặp gia đình nhau.","Chưa đến lúc ra mắt.","Thử viết một lá thư tay.","Đừng ngại là người yêu nhiều hơn.","Để mọi chuyện tự nhiên như hơi thở.","Có, và mặc chiếc áo đẹp nhất.","Trái tim bạn đã chọn rồi."]},
+
+nghiep:{name:"Sự nghiệp",seal:"Nghiệp",
+advice:["Chuẩn bị số liệu trước khi nói.","Gửi email đó trước 10 giờ sáng.","Hỏi sếp thẳng về kỳ vọng.","Làm thêm một bản nháp.","Tập trung vào một việc thôi.","Học thêm một kỹ năng mới.","Cập nhật CV ngay hôm nay.","Gặp gỡ người làm trong ngành.","Ghi lại thành tích của mình.","Nói không với việc ngoài phạm vi.","Nhận việc khó nhất trước.","Xin phản hồi sớm.","Đừng quyết định khi đang mệt.","Nghỉ một ngày rồi tính.","Đàm phán, đừng nhận con số đầu tiên.","Hỏi người đi trước.","Chia nhỏ dự án ra.","Đặt hạn chót cho chính mình.","Xây quan hệ, không chỉ xây kết quả.","Đừng so lương với đồng nghiệp lúc này.","Để công việc nói thay.","Trình bày ý tưởng trong năm phút.","Giữ thái độ chuyên nghiệp.","Đọc kỹ hợp đồng.","Tính đường dài năm năm.","Đừng đốt cầu khi rời đi.","Hỏi thêm về văn hóa công ty.","Tìm một người hướng dẫn.","Làm ít hơn nhưng làm kỹ hơn.","Tắt thông báo và làm sâu hai giờ.","Viết ra ba lựa chọn rồi loại dần.","Đừng nhận lời chỉ vì ngại.","Ứng tuyển dù chưa đủ mọi tiêu chí.","Chuẩn bị câu trả lời cho câu hỏi khó.","Nhờ đồng nghiệp đọc giúp.","Đừng chờ được cho phép mới thử.","Tiết kiệm trước khi nhảy việc.","Giữ sức cho chặng dài.","Chia công lao với cả nhóm.","Hỏi xem bạn thật sự muốn học được gì."],
+solo:["Đây là cơ hội, nắm lấy.","Cánh cửa này chưa mở, đợi cánh khác.","Sếp đánh giá bạn cao hơn bạn nghĩ.","Dự án sẽ thành nếu bạn kiên trì.","Đừng nhảy việc chỉ vì một ngày tệ.","Đến lúc tìm môi trường mới.","Hãy xin tăng lương.","Chưa phải lúc xin tăng lương.","Một lời mời bất ngờ đang đến.","Mạng lưới quan hệ sẽ giúp bạn.","Bạn đang đúng hướng, chỉ hơi chậm.","Deadline lỏng hơn bạn nghĩ, chất lượng thì không.","Deadline là thật, bắt đầu ngay.","Thất bại lần này là học phí rẻ.","Bạn cần nghỉ ngơi hơn cần thăng chức.","Hãy nói ý tưởng trong cuộc họp tới.","Ý tưởng đó tốt, viết thành đề xuất đi.","Phỏng vấn sẽ suôn sẻ.","Bạn sẽ học được nhiều ở đây.","Bạn đã học đủ ở đây.","Đừng để chức danh quyết định.","Làm việc mình giỏi, không phải việc mình sợ.","Đồng nghiệp đó đáng tin.","Đừng chia sẻ kế hoạch quá sớm.","Khởi nghiệp được, nhưng giữ việc chính thêm ít lâu.","Làm tự do hợp với bạn lúc này.","Một chứng chỉ sẽ mở thêm cửa.","Kinh nghiệm quan trọng hơn bằng cấp lúc này.","Hãy chọn người sếp, không chỉ chọn công ty.","Thu nhập sẽ tăng, nhưng từ từ.","Đây là năm để xây nền.","Đây là năm để bứt phá.","Gửi hồ sơ đi, xác suất cao hơn bạn tưởng.","Từ chối lời đề nghị này.","Nhận lời đề nghị này.","Hỏi lại chi tiết trước khi ký.","Báo cáo nên ngắn đi một nửa.","Bạn cần một kỳ nghỉ thật sự.","Thành công đến từ việc nhỏ lặp lại.","Nhà tuyển dụng đang xem hồ sơ của bạn.","Đừng làm việc miễn phí quá lâu.","Đến lúc tự định giá mình cao hơn.","Đừng sợ bắt đầu lại từ đầu.","Nghề này hợp với bạn.","Bạn đang ở sai chỗ, không phải sai người.","Hỏi lại chính mình vì sao bạn làm việc này.","Một người lạ sẽ giới thiệu cơ hội.","Công sức không bị bỏ phí.","Có, và mặc đồ chỉn chu vào.","Tin tốt sẽ đến vào thứ Năm."]},
+
+hoc:{name:"Học hành",seal:"Học",
+advice:["Ôn lại phần bạn ngại nhất.","Làm đề cũ.","Học nhóm một buổi.","Ngủ đủ trước ngày thi.","Tắt điện thoại khi học.","Học theo từng khối 25 phút.","Hỏi thầy cô ngay khi chưa hiểu.","Tóm tắt bài bằng lời của mình.","Giảng lại cho người khác nghe.","Đọc tài liệu gốc.","Viết dàn ý trước.","Bắt đầu sớm hơn một tuần.","Đừng thức trắng đêm.","Ghi chú bằng tay.","Kiểm tra lại đáp án.","Làm câu dễ trước.","Nộp bài sớm một ngày.","Đặt câu hỏi trong lớp.","Xin thư giới thiệu sớm.","Đọc kỹ đề bài hai lần.","Chọn môn bạn tò mò thật sự.","Lập kế hoạch ôn tập trên giấy.","Học ở thư viện thay vì ở nhà.","Ăn sáng trước khi thi.","Đừng so điểm với bạn bè.","Tìm một người học cùng.","Xem lại lỗi sai cũ.","Học từ vựng mỗi ngày một ít.","Nghe giảng rồi mới đọc sách.","Đọc sách rồi mới nghe giảng.","Tự thưởng sau mỗi chương.","Làm bài tập trước khi xem lời giải.","Hỏi đàn anh đàn chị.","Đăng ký sớm để giữ chỗ.","Viết bài luận như đang kể chuyện.","Chuẩn bị hồ sơ từ hôm nay.","Đừng ôm đồm quá nhiều môn.","Nghỉ giải lao đúng giờ.","Đọc lại bài viết vào sáng hôm sau.","Tin vào những gì bạn đã ôn."],
+solo:["Bạn sẽ qua môn.","Điểm sẽ tốt hơn lần trước.","Câu khó nhất sẽ không ra.","Câu bạn bỏ qua sẽ ra, ôn đi.","Đề năm nay dễ hơn tin đồn.","Học bổng này đáng nộp.","Hồ sơ của bạn đủ mạnh.","Bài luận cần thêm một câu chuyện thật.","Chọn ngành bạn thích, tiền sẽ theo sau.","Chọn ngành có việc làm, đam mê nuôi sau.","Du học là lựa chọn đúng.","Ở lại học trong nước cũng tốt.","Học thêm thạc sĩ có ích.","Đi làm trước rồi học sau.","Thầy cô đó đánh giá cao bạn.","Bạn hiểu bài hơn bạn nghĩ.","Bạn chưa hiểu bài như bạn nghĩ.","Nhóm này sẽ làm tốt.","Đổi nhóm đi.","Nộp muộn còn hơn không nộp.","Đừng chép bài.","Thi lại không phải dấu chấm hết.","Một cuốn sách sẽ đổi cách bạn nghĩ.","Một ngôn ngữ mới sẽ mở ra cơ hội.","Kiến thức này sẽ có ích sau này.","Nhớ lâu là nhờ ngủ đủ.","Tối nay học, mai đi chơi.","Tối nay nghỉ, mai học tiếp.","Kết quả sẽ có sớm hơn dự kiến.","Ngồi đợi kết quả không làm nó thay đổi.","Bạn cần ôn thêm hai ngày.","Bạn đã sẵn sàng.","Đừng học tủ.","Học tủ lần này may mắn.","Hãy gửi email cho giáo sư.","Giáo sư sẽ trả lời.","Câu trả lời nằm ở chương ba.","Viết ít đi, rõ hơn.","Đây là môn bạn sẽ nhớ cả đời.","Một bạn cùng lớp sẽ giúp bạn.","Thức khuya không làm bạn giỏi hơn.","Đăng ký đi, đừng sợ bị từ chối.","Bị từ chối chỉ là một vòng.","Thư chấp nhận đang trên đường.","Học vì tò mò, điểm sẽ theo.","Bỏ môn này là quyết định đúng.","Giữ môn này, cuối kỳ sẽ khá hơn.","Đổi chỗ ngồi lên bàn đầu.","Có, và mang theo hai cây bút.","Học xong nhớ đi ăn gì ngon."]},
+
+ban:{name:"Bạn bè & Gia đình",seal:"Nhà",
+advice:["Gọi điện thay vì nhắn tin.","Về nhà ăn cơm một bữa.","Hỏi thăm trước khi kể chuyện mình.","Nói lời cảm ơn với bố mẹ.","Lắng nghe mà không vội khuyên.","Đừng nhắc lại chuyện cũ.","Rủ đi cà phê cuối tuần.","Hãy là người làm hòa trước.","Giữ bí mật của bạn bè.","Đừng đứng giữa hai người đang giận nhau.","Nói rõ điều bạn cần.","Đặt ranh giới nhẹ nhàng.","Chúc mừng thật lòng.","Đừng cho vay số tiền bạn không thể mất.","Hỏi ý người lớn tuổi trong nhà.","Nhắn hỏi thăm người bạn lâu không gặp.","Tổ chức một buổi gặp mặt nhỏ.","Gửi một tấm ảnh kỷ niệm.","Đừng nói khi đang nóng giận.","Giải thích một lần, rồi thôi.","Cho mọi người thời gian bình tĩnh.","Đừng so sánh anh chị em.","Dành một ngày không điện thoại với gia đình.","Hỏi bố mẹ về thời trẻ của họ.","Mời bạn bè đến nhà.","Thừa nhận khi mình sai.","Đừng giữ giận quá lâu.","Gửi lời chúc sinh nhật bằng giọng nói.","Trung thực, kể cả khi khó nghe.","Tôn trọng lựa chọn của họ.","Đừng ép ai phải chọn phe.","Hỏi xem họ có cần giúp không.","Giúp mà không chờ trả ơn.","Nấu một bữa cho cả nhà.","Đừng kể chuyện này trong nhóm chat.","Gặp riêng nói chuyện.","Đừng đoán, hãy hỏi.","Nhớ những ngày quan trọng của họ.","Chia sẻ điều bạn đang lo.","Để khoảng trống cho mỗi người."],
+solo:["Người bạn đó vẫn quý bạn.","Tình bạn này đáng giữ.","Có những tình bạn chỉ dành cho một mùa.","Bố mẹ lo vì thương, không phải vì không tin.","Gia đình sẽ hiểu, chỉ cần thời gian.","Bạn không cần làm vừa lòng tất cả.","Một người bạn cũ sắp liên lạc.","Hãy là người gọi trước.","Đừng cho mượn lần nữa.","Họ đang cần bạn hơn bạn nghĩ.","Cuộc cãi vã này sẽ qua.","Lời xin lỗi sẽ được chấp nhận.","Bạn đang bị lợi dụng một chút.","Đó chỉ là hiểu lầm.","Đó không chỉ là hiểu lầm.","Hãy đi chuyến du lịch đó cùng nhau.","Nhóm bạn này hợp với bạn.","Tìm thêm những người cùng chí hướng.","Ít bạn mà thật còn hơn nhiều bạn mà xa.","Bố mẹ tự hào về bạn.","Mẹ muốn nghe giọng bạn.","Bố không nói, nhưng bố nhớ bạn.","Anh chị em là đồng minh lâu dài nhất.","Đừng xen vào chuyện nhà người khác.","Hãy giúp, nhưng đừng gánh hết.","Người đó chưa xứng với lòng tốt của bạn.","Người đó đang cố, hãy cho cơ hội.","Một bữa cơm sẽ hàn gắn nhiều thứ.","Đây là lúc nói lời thật lòng.","Đừng để chuyện nhỏ chia cắt mọi người.","Bạn đã làm đủ rồi.","Ranh giới không làm bạn thành người xấu.","Họ sẽ đến, dù không báo trước.","Gia đình ủng hộ quyết định của bạn.","Gia đình cần được giải thích thêm.","Bạn bè sẽ giữ bí mật.","Chuyện này đừng kể với ai.","Rủ thêm một người nữa.","Tình bạn này cần gặp mặt, không chỉ nhắn tin.","Đừng ghen tỵ, hãy mừng cho họ.","Người im lặng nhất đang quan tâm nhất.","Có người muốn làm lành với bạn.","Bạn là chỗ dựa của ai đó.","Để người khác chăm sóc bạn một lần.","Ra ở riêng là ý hay.","Ở gần gia đình thêm ít lâu.","Một món quà đơn giản sẽ khiến họ vui.","Hôm nay hãy gọi về nhà.","Có, và mang theo bánh.","Thời gian bên nhau là món quà lớn nhất."]},
+
+tien:{name:"Tiền bạc",seal:"Tài",
+advice:["Đợi 48 giờ trước khi mua.","So giá ở ba nơi.","Ghi lại mọi khoản chi tuần này.","Để dành một phần mười trước khi tiêu.","Đọc kỹ điều khoản.","Đừng vay để mua thứ không sinh lời.","Hỏi người có chuyên môn.","Chia ra, đừng dồn vào một chỗ.","Trả nợ lãi cao trước.","Lập quỹ khẩn cấp.","Đừng nghe mách nước trên mạng.","Mua đồ bền hơn là đồ rẻ.","Hủy các gói đăng ký không dùng.","Đặt ngân sách cho cuộc vui.","Đừng cho vay vì nể.","Tính cả chi phí ẩn.","Đọc báo cáo tài chính trước.","Đầu tư vào kỹ năng của mình.","Đừng mua khi đang buồn.","Mặc cả nhẹ nhàng.","Chia nhỏ mục tiêu tiết kiệm.","Đặt mức cắt lỗ trước khi vào.","Đừng chạy theo đám đông.","Kiểm tra lại số dư.","Tự nấu ăn tuần này.","Bán bớt đồ không dùng.","Viết mục tiêu tài chính năm nay.","Hỏi lại giá trước khi gật đầu.","Đừng chia sẻ thông tin tài khoản.","Cẩn thận với lời hứa lãi cao.","Ưu tiên bảo hiểm sức khỏe.","Tính xem mất bao nhiêu giờ làm để mua nó.","Đợi đợt giảm giá.","Đừng so ví với người khác.","Tách tài khoản chi tiêu và tiết kiệm.","Trả tiền mặt cho các khoản nhỏ.","Bàn với người thân trước khi chi lớn.","Giữ hóa đơn.","Đừng ký khi chưa hiểu.","Nghĩ về giá trị sử dụng, không phải giá mua."],
+solo:["Mua đi, bạn xứng đáng.","Đừng mua, bạn sẽ quên nó sau một tuần.","Khoản tiền này nên để dành.","Một khoản thu bất ngờ đang đến.","Một khoản chi bất ngờ đang đến, hãy chuẩn bị.","Thị trường không đoán được, đừng cố.","Đầu tư dài hạn, đừng nhìn giá mỗi ngày.","Đây không phải cơ hội, đây là rủi ro.","Đây là cơ hội nhỏ nhưng thật.","Lương sẽ tăng.","Kiếm thêm một nguồn thu.","Việc làm thêm này đáng làm.","Việc làm thêm này lấy mất thời gian quý.","Tiền đi rồi sẽ về.","Món nợ này nên đòi.","Món nợ này nên quên.","Cho vay là cho luôn.","Đừng đầu tư thứ bạn không hiểu.","Bạn tiêu cho đồ ăn nhiều hơn bạn nghĩ.","Tiết kiệm nhỏ cộng lại thành lớn.","Mua trải nghiệm, đừng mua đồ.","Chuyến đi này đáng tiền.","Chiếc điện thoại cũ vẫn dùng tốt.","Đợi bản mới.","Mua nhà chưa vội.","Thuê nhà lúc này hợp lý hơn.","Đây là lúc học về tài chính.","Bạn đang làm tốt hơn bạn nghĩ.","Ví sẽ dày hơn vào cuối tháng.","Cuối tháng sẽ hơi chật, tiết chế lại.","Khởi nghiệp được, nhưng đừng dùng hết tiền tiết kiệm.","Hùn vốn với bạn thân cần hợp đồng.","Đừng hùn vốn lần này.","Đàm phán lại giá.","Con số đầu tiên luôn thương lượng được.","Quà đắt không bằng quà đúng.","Đầu tư cho sức khỏe không bao giờ lỗ.","Sách là khoản đầu tư rẻ nhất.","Tiền không giải quyết được chuyện này.","Tiền sẽ giải quyết được chuyện này.","Để tiền làm việc cho bạn.","Giàu chậm vẫn là giàu.","Đừng khoe lúc này.","Giữ kín kế hoạch tài chính.","Xổ số không phải kế hoạch.","Vé số hôm nay chỉ để làm kỷ niệm.","May mắn sẽ đến, nhưng không từ cờ bạc.","Kiểm tra lại hợp đồng bảo hiểm.","Có, nhưng chọn trả góp không lãi.","Câu trả lời nằm trong bảng chi tiêu của bạn."]},
+
+than:{name:"Bản thân",seal:"Thân",
+advice:["Ngủ trước 12 giờ đêm nay.","Uống thêm hai cốc nước.","Đi bộ ra ngoài mười lăm phút.","Viết ba điều bạn biết ơn.","Tắt mạng xã hội một ngày.","Dọn bàn làm việc.","Gọi cho người khiến bạn cười.","Đọc mười trang sách.","Vận động nhẹ nhàng.","Nói chuyện với một người bạn tin.","Ăn một bữa thật tử tế.","Phơi nắng buổi sáng.","Hít thở sâu năm lần.","Viết nhật ký tối nay.","Nói không với một việc.","Nghe lại một bài hát cũ bạn thích.","Học một điều mới nhỏ.","Tha thứ cho chính mình.","Để điện thoại xa giường.","Làm một việc tốt không ai biết.","Thử một sở thích mới.","Dành một buổi chiều cho riêng mình.","Đi khám định kỳ.","Đổi một thói quen nhỏ.","Ngắm trời một lúc.","Cười vào chính mình.","Đừng ép mình phải hoàn hảo.","Tắm nước ấm và nghỉ sớm.","Đặt một mục tiêu cho tuần này, chỉ một thôi.","Ghi lại tiến bộ dù nhỏ.","Mặc bộ đồ bạn thích nhất.","Nấu một món mới.","Đi đâu đó chưa từng đến.","Nói thành lời điều bạn muốn.","Ngừng so sánh với người khác.","Ăn chậm lại.","Dọn bớt đồ cũ.","Nhờ giúp đỡ khi cần.","Ghi lại giấc mơ.","Khen bản thân một câu."],
+solo:["Bạn đang làm tốt hơn bạn nghĩ.","Mệt là tín hiệu, không phải thất bại.","Hôm nay hãy nhẹ nhàng với chính mình.","Bạn không cần trả lời mọi tin nhắn ngay.","Điều bạn lo có lẽ sẽ không xảy ra.","Bạn đủ sức vượt qua chuyện này.","Bắt đầu thói quen mới vào thứ Hai.","Bắt đầu ngay hôm nay, đừng đợi thứ Hai.","Cơ thể bạn cần nghỉ ngơi.","Tâm trí bạn cần một chuyến đi.","Đổi kiểu tóc đi.","Đây là phiên bản tốt nhất của bạn tới giờ.","Bạn đang lớn lên, dù chưa thấy.","Nỗi buồn này sẽ qua.","Niềm vui sắp đến từ một điều nhỏ.","Cho phép mình nghỉ.","Bạn được phép đổi ý.","Bạn không cần lý do để vui.","Đừng xin lỗi vì điều không phải lỗi của bạn.","Bạn tử tế hơn bạn nghĩ.","Tự tin bước vào phòng.","Giọng nói của bạn đáng được nghe.","Năm nay là năm của bạn.","Thử điều khiến bạn hơi sợ.","Đừng chạy theo người khác.","Chậm mà chắc.","Hôm nay là ngày tốt để bắt đầu lại.","Một thói quen nhỏ sẽ đổi nhiều thứ.","Đừng quá khắt khe.","Chăm giấc ngủ trước đã.","Đi tập đi, bạn sẽ thấy khác.","Buổi sáng là thời điểm của bạn.","Buổi tối là thời điểm của bạn.","Trực giác của bạn đúng.","Lắng nghe cơ thể.","Viết ra điều bạn sợ, nó sẽ nhỏ lại.","Bạn đang mang quá nhiều thứ.","Buông bớt một thứ.","Mọi thứ không cần xong trong hôm nay.","Nếu nỗi buồn kéo dài, hãy gặp người có chuyên môn.","Cô đơn lúc này chỉ là tạm thời.","Ra ngoài và gặp người.","Ở nhà một mình hôm nay cũng tốt.","Bạn đã đi xa hơn năm ngoái.","Chỉ nhìn lại để thấy mình đã đi bao xa.","Đây là dấu hiệu bạn đang chờ.","Có, và pha cho mình một cốc trà.","Bạn xứng đáng được nghỉ ngơi.","Đặt mình lên đầu danh sách.","Người bạn cần nhất lúc này là chính bạn."]}
+};
+
+const GENERAL=["Có.","Không.","Chắc chắn rồi.","Đừng.","Chưa phải lúc.","Cứ làm đi.","Hãy đợi thêm một tuần.","Câu trả lời nằm trong dữ liệu bạn chưa xem.","Hỏi lại sau khi ngủ một giấc.","Bạn đã biết câu trả lời rồi.","Đổi câu hỏi đi.","Có, nhưng không theo cách bạn nghĩ.","Không, và đó là điều tốt.","Đừng tự làm khó mình.","Hãy hỏi người bạn tin nhất.","Thử một lần rồi tính.","Giữ nguyên kế hoạch.","Bỏ bớt một thứ trước đã.","Làm phiên bản nhỏ trước.","Gửi đi. Hoàn hảo là kẻ thù của hoàn thành.","Đọc lại từ đầu.","Không đáng để lo.","Nó quan trọng hơn bạn tưởng.","Nó ít quan trọng hơn bạn tưởng.","Đi bộ mười lăm phút rồi quyết.","Ăn gì đó đã.","Mạnh dạn lên.","Chậm lại một nhịp.","Nói thật.","Im lặng lúc này là đủ.","Hãy để người khác đi trước.","Bạn nên là người đi trước.","Viết nó ra giấy.","Cứ để mọi chuyện tự nhiên.","Có lý do để nghi ngờ.","Tin vào trực giác.","Tin vào con số.","Kiểm tra lại giả định.","Đặt hạn chót và giữ nó.","Không phải hôm nay.","Hôm nay là ngày tốt.","Ngày mai sẽ rõ hơn.","Hỏi nhiều hơn, nói ít hơn.","Bạn cần thêm thông tin.","Bạn đang nghĩ quá nhiều.","Đáng để thử.","Rủi ro nhỏ hơn bạn sợ.","Rủi ro lớn hơn bạn thấy.","Chọn phương án đơn giản hơn.","Chọn phương án khó hơn.","Đừng nhìn lại.","Nhìn lại một lần cuối.","Có, nếu bạn thật lòng muốn.","Không, nếu chỉ vì người khác muốn.","Kết quả sẽ khiến bạn bất ngờ.","Đừng đánh cược tất cả.","Đặt cược vào chính mình.","Cần kiên nhẫn.","Hành động ngay.","Tạm gác lại.","Bắt đầu từ việc dễ nhất.","Bắt đầu từ việc khó nhất.","Cười lên, mọi chuyện ổn thôi.","Không có gì để mất.","Có thứ quan trọng hơn đang chờ.","Một lời xin lỗi sẽ giúp.","Cảm ơn ai đó trước.","Bạn xứng đáng với điều đó.","Không cần sự cho phép của ai.","Hỏi ý người có kinh nghiệm.","Lắng nghe người phản đối.","Ngủ sớm đi.","Đây là một bước, không phải điểm đến.","Thất bại ở đây vẫn có ích.","Đừng hứa điều bạn chưa chắc.","Mọi thứ đang đi đúng hướng.","Điều chỉnh hướng một chút.","Có, lần này.","Không, lần này.","Hỏi một câu nhỏ hơn.","Nghĩ về mười năm sau.","Nghĩ về mười phút tới.","Bạn sẽ không hối tiếc.","Có thể bạn sẽ tiếc nếu không làm.","Để nó trôi qua.","Giữ chặt lấy nó.","Đừng làm một mình.","Đây là việc chỉ bạn làm được.","Tìm điểm cân bằng.","Ưu tiên sức khỏe.","Có, nhưng chuẩn bị kỹ.","Gần như chắc chắn.","Khó nói.","Tung đồng xu và xem bạn mong mặt nào.","Đừng hỏi sách, hỏi lòng mình.","Thành thật với bản thân.","Chuyện này sẽ qua.","Cơ hội sẽ quay lại.","Cơ hội này hiếm.","Bỏ qua lời đồn.","Kiểm chứng trước khi tin.","Làm điều tử tế.","Giữ khoảng cách.","Tiến gần hơn.","Một khởi đầu mới.","Hoàn thành việc cũ trước.","Thêm một lần nữa.","Đủ rồi.","Dám thất bại.","Thời gian đứng về phía bạn.","Đừng để thời gian quyết định thay.","Có người đang chờ bạn lên tiếng.","Mọi thứ cần một bản nháp xấu.","Rồi bạn sẽ hiểu.","Câu trả lời đến từ nơi không ngờ.","Có. Đi thôi."];
+
+const GRUMPY=["Sách vừa trả lời rồi mà.","Hỏi lại không đổi được số phận đâu.","Bạn đang tìm câu trả lời bạn muốn nghe.","Sách cần uống nước một chút.","Lần thứ ba rồi. Câu trả lời vẫn nằm trong lòng bạn.","Sách gập lại đây, mai hỏi tiếp nhé."];
+
+/* ---------- Build chapters: deterministic shuffle so each page always holds the same answer ---------- */
+function hashStr(s){let h=2166136261;for(const c of s){h^=c.codePointAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function shuffle(arr,seed){const r=rng(seed),a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+const CH={};
+for(const k in BANK){
+  const b=BANK[k], list=[...b.solo, ...b.advice];
+  for(const v of VERDICTS) for(const a of b.advice) list.push(v+" "+a);
+  CH[k]={name:b.name,seal:b.seal,pages:shuffle([...new Set(list)],hashStr(k))};
+}
+{
+  const list=[...GENERAL]; for(const k in BANK) list.push(...BANK[k].solo);
+  CH.chung={name:"Tổng hợp",seal:"Tổng",pages:shuffle([...new Set(list)],hashStr("chung"))};
+}
+const ORDER=["auto","tinh","nghiep","hoc","ban","tien","than","chung"];
+
+/* ---------- Keyword guessing for "Để sách đoán" ---------- */
+const KEYS={
+  tinh:["yêu","người yêu","crush","tỏ tình","hẹn hò","chia tay","người cũ","cưới","thả thính","anh ấy","cô ấy","người ấy","bạn gái","bạn trai","tình","ghen","rung động","độc thân","mập mờ"],
+  nghiep:["việc","sếp","công ty","lương","phỏng vấn","nhảy việc","dự án","deadline","khởi nghiệp","thăng chức","đồng nghiệp","cv","ứng tuyển","offer","nghề","freelance","báo cáo","họp"],
+  hoc:["thi","học","điểm","môn","trường","học bổng","du học","luận","thạc sĩ","phd","ielts","toefl","gre","giáo sư","thầy","cô giáo","đề","ôn","khóa luận","nộp hồ sơ","lớp"],
+  ban:["bạn bè","bạn thân","bố","mẹ","ba ","má ","gia đình","anh trai","chị gái","em trai","em gái","họ hàng","cãi","nhóm bạn","ông bà","về quê","về nhà"],
+  tien:["tiền","mua","đầu tư","chứng khoán","cổ phiếu","vay","nợ","tiết kiệm","giá","coin","crypto","bán","trả góp","vàng","ví","chi tiêu","lãi","xổ số"],
+  than:["sức khỏe","ngủ","gym","tập","buồn","mệt","stress","cân","giảm cân","bản thân","tóc","thói quen","chán","lo âu","tự tin","cô đơn","nghỉ ngơi"]
+};
+function guessChapter(q){
+  const s=" "+q.toLowerCase()+" "; let best=null,score=0;
+  for(const k in KEYS){let n=0;for(const w of KEYS[k]) if(s.includes(w)) n+=w.length>4?2:1; if(n>score){score=n;best=k;}}
+  return best||"chung";
+}
+
+/* ---------- State ---------- */
+const $=id=>document.getElementById(id);
+const book=$("book"), ans=$("answer"), q=$("q"), cover=$("cover");
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+let chapter=store.get("str-chapter","auto"); if(!ORDER.includes(chapter)) chapter="auto";
+let history=store.get("str-history",[]); if(!Array.isArray(history)) history=[];
+let soundOn=store.get("str-sound",true);
+let busy=false, current=null, lastIdx=-1, repeat={q:"",n:0};
+
+/* ---------- Chapter chips ---------- */
+function chipLabel(k){return k==="auto"?"Để sách đoán":CH[k].name;}
+ORDER.forEach(k=>{
+  const b=document.createElement("button"); b.className="chip"; b.type="button"; b.dataset.k=k;
+  const n=document.createElement("span"); n.className="n"; n.textContent=chipLabel(k);
+  const c=document.createElement("span"); c.className="c"; c.textContent=k==="auto"?"Theo câu hỏi":CH[k].pages.length+" trang";
+  b.append(n,c);
+  b.addEventListener("click",()=>{chapter=k;store.set("str-chapter",k);syncChips();});
+  $("chips").appendChild(b);
+});
+function resolved(){return chapter==="auto"?guessChapter(q.value.trim()):chapter;}
+function syncChips(){
+  document.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===chapter));
+  const r=resolved();
+  $("coverCh").textContent=CH[r].name;
+  $("guess").textContent=chapter==="auto"?(q.value.trim()?"Sách đoán câu hỏi thuộc chương "+CH[r].name+" · "+CH[r].pages.length+" trang":"Gõ câu hỏi để sách đoán chương, hoặc mở chương Tổng hợp"):CH[r].pages.length+" trang trong chương này";
+}
+q.addEventListener("input",syncChips);
+
+/* ---------- Sound: short filtered noise burst ---------- */
+let actx=null;
+function rustle(){
+  if(!soundOn) return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const len=Math.floor(actx.sampleRate*.12), buf=actx.createBuffer(1,len,actx.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<len;i++){const t=i/len; d[i]=(Math.random()*2-1)*Math.pow(1-t,2)*(t<.08?t/.08:1);}
+    const src=actx.createBufferSource(); src.buffer=buf;
+    const f=actx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=2200+Math.random()*1800; f.Q.value=.7;
+    const g=actx.createGain(); g.gain.value=.18;
+    src.connect(f).connect(g).connect(actx.destination); src.start();
+  }catch(e){}
+}
+function syncSound(){$("sound").textContent="Tiếng lật trang: "+(soundOn?"bật":"tắt");$("sound").setAttribute("aria-pressed",soundOn);}
+$("sound").addEventListener("click",()=>{soundOn=!soundOn;store.set("str-sound",soundOn);syncSound();});
+
+/* ---------- Flip ---------- */
+function flip(n){
+  return new Promise(res=>{
+    if(n<=0) return res();
+    rustle();
+    if(reduce){ return setTimeout(()=>flip(n-1).then(res),60); }
+    const leaf=document.createElement("div"); leaf.className="leaf"; book.appendChild(leaf);
+    requestAnimationFrame(()=>leaf.classList.add("go"));
+    setTimeout(()=>{leaf.remove(); flip(n-1).then(res)},140);
+  });
+}
+
+/* ---------- Open a page ---------- */
+function todayKey(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+async function open(mode){
+  if(busy) return; busy=true; setButtons(true);
+  const question=q.value.trim(), k=resolved(), c=CH[k];
+  let idx, text, daily=mode==="daily", grumpy=false;
+
+  if(!daily && question){
+    if(question.toLowerCase()===repeat.q) repeat.n++; else repeat={q:question.toLowerCase(),n:1};
+    if(repeat.n>=3){grumpy=true; repeat.n=0;}
+  }
+  if(daily){ idx=hashStr(todayKey()+k)%c.pages.length; }
+  else{ do{idx=Math.floor(Math.random()*c.pages.length);}while(idx===lastIdx && c.pages.length>1); }
+  lastIdx=idx;
+  text=grumpy?GRUMPY[Math.floor(Math.random()*GRUMPY.length)]:c.pages[idx];
+  const page=idx+1;
+
+  ans.classList.add("fade"); book.classList.add("open");
+  await flip(5+Math.floor(Math.random()*4));
+
+  $("runL").textContent="Chương · "+c.name;
+  const d=new Date();
+  $("qShow").textContent=daily?"Trang của ngày "+d.getDate()+"/"+(d.getMonth()+1)+(question?" · "+question:""):(question||"Câu hỏi được giữ trong im lặng.");
+  $("folioL").textContent=page>1?page-1:"·"; $("folioR").textContent=grumpy?"?":page;
+  $("seal").textContent=grumpy?"Cáu":c.seal;
+  const seed=rng(hashStr(k+page+(daily?todayKey():"")));
+  $("lucky").textContent=grumpy?"":"Số may "+(1+Math.floor(seed()*99));
+  ans.textContent=text; ans.classList.remove("fade");
+
+  current={a:text,page:grumpy?"?":page,ch:c.name,q:question,daily};
+  if(!grumpy){history.unshift(current); history=history.slice(0,20); store.set("str-history",history);}
+  renderLog(); busy=false; setButtons(false);
+}
+function setButtons(dis){["again","daily"].forEach(id=>$(id).disabled=dis);}
+
+/* ---------- Hold-to-focus on the cover ---------- */
+const HOLD=900; let holdT=null;
+cover.style.setProperty("--hold",HOLD+"ms");
+cover.addEventListener("pointerdown",e=>{
+  if(e.button>0) return;
+  cover.classList.add("holding"); $("coverHint").textContent="Đang tập trung…";
+  holdT=setTimeout(()=>{holdT=null;cover.classList.remove("holding");$("coverHint").textContent="Giữ để tập trung";open();},reduce?150:HOLD);
+});
+function cancelHold(){ if(holdT){clearTimeout(holdT);holdT=null;cover.classList.remove("holding");$("coverHint").textContent="Giữ lâu hơn một chút";} }
+cover.addEventListener("pointerup",cancelHold);
+cover.addEventListener("pointerleave",cancelHold);
+cover.addEventListener("pointercancel",cancelHold);
+cover.addEventListener("click",e=>{ if(e.detail===0) open(); }); // keyboard Enter/Space
+cover.addEventListener("contextmenu",e=>e.preventDefault());
+
+$("again").addEventListener("click",()=>open());
+$("daily").addEventListener("click",()=>open("daily"));
+q.addEventListener("keydown",e=>{ if(e.key==="Enter") open(); });
+$("close").addEventListener("click",()=>{ book.classList.remove("open"); q.value=""; syncChips(); q.focus(); });
+
+/* ---------- Copy ---------- */
+$("copy").addEventListener("click",()=>{
+  const btn=$("copy");
+  if(!current){btn.textContent="Mở sách trước đã";setTimeout(()=>btn.textContent="Chép câu trả lời",1400);return;}
+  const t="Sách Trả Lời · "+current.ch+" · tr. "+current.page+(current.q?"\nHỏi: "+current.q:"")+"\nĐáp: "+current.a;
+  const done=()=>{btn.textContent="Đã chép";setTimeout(()=>btn.textContent="Chép câu trả lời",1400);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,()=>fallback(t,done));}else fallback(t,done);
+});
+function fallback(t,done){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");done();}catch(e){}ta.remove();}
+
+/* ---------- History ---------- */
+function renderLog(){
+  const rest=history.slice(current&&history[0]===current?1:0);
+  $("logWrap").hidden=rest.length===0;
+  $("log").innerHTML="";
+  rest.forEach(h=>{
+    const li=document.createElement("li");
+    const pn=document.createElement("span"); pn.className="pn"; pn.textContent="tr. "+h.page;
+    const sm=document.createElement("small"); sm.textContent=h.ch+(h.daily?" · hôm nay":""); pn.appendChild(sm);
+    const d=document.createElement("div");
+    if(h.q){const qq=document.createElement("div"); qq.className="qq"; qq.textContent=h.q; d.appendChild(qq);}
+    const aa=document.createElement("div"); aa.className="aa"; aa.textContent=h.a; d.appendChild(aa);
+    li.append(pn,d); $("log").appendChild(li);
+  });
+}
+$("clear").addEventListener("click",()=>{history=current?[current]:[];store.set("str-history",history);renderLog();});
+
+syncChips(); syncSound(); renderLog();
+</script>
+</body>
+</html>
