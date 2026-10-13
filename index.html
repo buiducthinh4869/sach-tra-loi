@@ -48,6 +48,15 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,6.4vw,48px);l
 .chip[aria-pressed="true"]{border:1px solid var(--foil);box-shadow:inset 0 0 0 1px var(--foil);background:color-mix(in srgb,var(--foil) 14%,var(--bg))}
 .chip:focus-visible{outline:2px solid var(--foil);outline-offset:2px}
 .guess{font-size:13px;color:var(--muted);min-height:1.3em;text-align:center}
+/* Ẩm thực: bộ lọc nền ẩm thực và bữa, cùng kiểu khung với ô chương */
+.filters{width:100%;display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.frow{display:flex;flex-direction:column;align-items:center;gap:6px}
+.fchips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.fchip{font:inherit;font-size:13px;line-height:1.3;padding:5px 10px;border:1px solid color-mix(in srgb,var(--muted) 40%,transparent);border-radius:6px;
+  background:color-mix(in srgb,var(--paper) 55%,var(--bg));color:var(--fg);cursor:pointer;transition:border-color .15s,background .15s}
+.fchip:hover{border-color:var(--foil)}
+.fchip[aria-pressed="true"]{border:1px solid var(--foil);box-shadow:inset 0 0 0 1px var(--foil);background:color-mix(in srgb,var(--foil) 14%,var(--bg))}
+.fchip:focus-visible{outline:2px solid var(--foil);outline-offset:2px}
 
 .ask{width:100%;max-width:560px;display:flex;flex-direction:column;gap:8px}
 .ask input{font:inherit;font-family:var(--display);font-size:18px;padding:10px 2px;border:0;border-bottom:1px solid var(--muted);background:transparent;color:var(--fg);outline:none}
@@ -92,6 +101,9 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,6.4vw,48px);l
 .answer.mid{font-size:clamp(15px,2.55vw,22px)}
 .answer.long{font-size:clamp(13px,2.16vw,19px);line-height:1.4}
 .answer.fade{opacity:0}
+.dish-meta{font-family:var(--ui);font-size:clamp(11px,1.6vw,12.5px);line-height:1.4;letter-spacing:.02em;color:#6b6e7a;text-align:center;text-wrap:balance;margin:8px 0 0}
+.dish-desc{font-family:var(--display);font-size:clamp(13px,1.9vw,15.5px);line-height:1.5;color:#4b4e5c;text-align:center;text-wrap:pretty;max-width:32ch;margin:10px 0 0}
+.dish-note{font-size:11px;line-height:1.4;font-style:italic;color:#6b6e7a;text-align:center;margin:8px 0 0}
 .seal{position:absolute;top:7%;right:8%;width:38px;height:38px;border:2px solid var(--accent);color:var(--accent);border-radius:4px;
   display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:12px;line-height:1;transform:rotate(-8deg);opacity:.85;text-align:center}
 .lucky{position:absolute;bottom:6%;left:9%;font-size:12px;color:#6b6e7a;letter-spacing:.04em;font-variant-numeric:tabular-nums}
@@ -151,6 +163,10 @@ button.link:hover{color:var(--fg)}
   <div class="chapters">
     <span class="lbl" id="chLbl">Chọn chương</span>
     <div class="chips" id="chips" role="group" aria-labelledby="chLbl"></div>
+    <div class="filters" id="filters" hidden>
+      <div class="frow"><span class="lbl" id="cuLbl">Ẩm thực</span><div class="fchips" id="cuisines" role="group" aria-labelledby="cuLbl"></div></div>
+      <div class="frow"><span class="lbl" id="mealLbl">Bữa</span><div class="fchips" id="meals" role="group" aria-labelledby="mealLbl"></div></div>
+    </div>
     <div class="guess" id="guess" aria-live="polite"></div>
   </div>
 
@@ -179,6 +195,9 @@ button.link:hover{color:var(--fg)}
         <div class="page right">
           <span class="seal" id="seal">Tổng</span>
           <p class="answer" id="answer">—</p>
+          <p class="dish-meta" id="dishMeta" hidden></p>
+          <p class="dish-desc" id="dishDesc" hidden></p>
+          <p class="dish-note" id="dishNote" hidden></p>
           <span class="lucky" id="lucky"></span>
           <span class="folio" id="folioR">—</span>
         </div>
@@ -205,9 +224,11 @@ button.link:hover{color:var(--fg)}
 </div>
 
 <script src="answers.js"></script>
+<script src="dishes.js"></script>
 <script>
-/* ---------- Answer bank: answers.js ---------- */
-const {VERDICTS,BANK,GENERAL,GRUMPY}=window.SACH_DATA;
+/* ---------- Answer bank: answers.js, dishes: dishes.js ---------- */
+const {VERDICTS,BANK,GENERAL,GRUMPY,GRUMPY_AN=[]}=window.SACH_DATA;
+const DISHES=window.SACH_DISHES||[];
 
 /* ---------- Build chapters: deterministic shuffle so each page always holds the same answer ---------- */
 function hashStr(s){let h=2166136261;for(const c of s){h^=c.codePointAt(0);h=Math.imul(h,16777619);}return h>>>0;}
@@ -224,7 +245,10 @@ for(const k in BANK){
   const list=[...GENERAL]; for(const k in BANK) list.push(...BANK[k].solo);
   CH.chung={name:"Tổng hợp",seal:"Tổng",pages:shuffle([...new Set(list)],hashStr("chung"))};
 }
-const ORDER=["auto","tinh","nghiep","hoc","ban","tien","than","chung"];
+/* Ẩm thực: each page holds one dish, page number = position in the seeded shuffle */
+CH.an={name:"Ẩm thực",seal:"Ăn",pages:shuffle(DISHES,hashStr("an"))};
+const ORDER=["auto","tinh","nghiep","hoc","ban","tien","than","an","chung"];
+const unit=k=>k==="an"?"món":"trang";
 
 /* ---------- Keyword guessing for "Để sách đoán" ---------- */
 const KEYS={
@@ -233,7 +257,8 @@ const KEYS={
   hoc:["thi","học","điểm","môn","trường","học bổng","du học","luận","thạc sĩ","phd","ielts","toefl","gre","giáo sư","thầy","cô giáo","đề","ôn","khóa luận","nộp hồ sơ","lớp"],
   ban:["bạn bè","bạn thân","bố","mẹ","ba ","má ","gia đình","anh trai","chị gái","em trai","em gái","họ hàng","cãi","nhóm bạn","ông bà","về quê","về nhà"],
   tien:["tiền","mua","đầu tư","chứng khoán","cổ phiếu","vay","nợ","tiết kiệm","giá","coin","crypto","bán","trả góp","vàng","ví","chi tiêu","lãi","xổ số"],
-  than:["sức khỏe","ngủ","gym","tập","buồn","mệt","stress","cân","giảm cân","bản thân","tóc","thói quen","chán","lo âu","tự tin","cô đơn","nghỉ ngơi"]
+  than:["sức khỏe","ngủ","gym","tập","buồn","mệt","stress","cân","giảm cân","bản thân","tóc","thói quen","chán","lo âu","tự tin","cô đơn","nghỉ ngơi"],
+  an:["ăn gì","ăn sáng","ăn trưa","ăn tối","đói","bữa","món","nấu gì","quán","nhậu","lẩu","uống gì","đặt đồ ăn","thèm"]
 };
 function guessChapter(q){
   const s=" "+q.toLowerCase()+" "; let best=null,score=0;
@@ -256,7 +281,7 @@ function chipLabel(k){return k==="auto"?"Để sách đoán":CH[k].name;}
 ORDER.forEach(k=>{
   const b=document.createElement("button"); b.className="chip"; b.type="button"; b.dataset.k=k;
   const n=document.createElement("span"); n.className="n"; n.textContent=chipLabel(k);
-  const c=document.createElement("span"); c.className="c"; c.textContent=k==="auto"?"Theo câu hỏi":CH[k].pages.length+" trang";
+  const c=document.createElement("span"); c.className="c"; c.textContent=k==="auto"?"Theo câu hỏi":CH[k].pages.length+" "+unit(k);
   b.append(n,c);
   b.addEventListener("click",()=>{chapter=k;store.set("str-chapter",k);syncChips();});
   $("chips").appendChild(b);
@@ -266,9 +291,54 @@ function syncChips(){
   document.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===chapter));
   const r=resolved();
   $("coverCh").textContent=CH[r].name;
-  $("guess").textContent=chapter==="auto"?(q.value.trim()?"Sách đoán câu hỏi thuộc chương "+CH[r].name+" · "+CH[r].pages.length+" trang":"Gõ câu hỏi để sách đoán chương, hoặc mở chương Tổng hợp"):CH[r].pages.length+" trang trong chương này";
+  $("guess").textContent=chapter==="auto"?(q.value.trim()?"Sách đoán câu hỏi thuộc chương "+CH[r].name+" · "+CH[r].pages.length+" "+unit(r):"Gõ câu hỏi để sách đoán chương, hoặc mở chương Tổng hợp"):CH[r].pages.length+" "+unit(r)+" trong chương này";
+  syncFilters();
 }
 q.addEventListener("input",syncChips);
+
+/* ---------- Ẩm thực: cuisine and meal filters ---------- */
+const CUISINES={viet:"Việt Nam",trung:"Trung Hoa",nhat:"Nhật Bản",han:"Hàn Quốc",thai:"Thái Lan",dna:"Đông Nam Á khác",an:"Ấn Độ và Nam Á",trungdong:"Trung Đông và Bắc Phi",au:"Châu Âu",my:"Châu Mỹ"};
+const MEALS={now:"Theo giờ hiện tại",sang:"Sáng",trua:"Trưa",toi:"Tối",khuya:"Khuya",anvat:"Ăn vặt",trangmieng:"Tráng miệng"};
+const MEAL_SAY={sang:"bữa sáng",trua:"bữa trưa",toi:"bữa tối",khuya:"ăn khuya",anvat:"ăn vặt"};
+let foodCu=store.get("str-an-cuisines",[]); if(!Array.isArray(foodCu)) foodCu=[]; foodCu=foodCu.filter(x=>x in CUISINES);
+let foodMeal=store.get("str-an-meal","now"); if(!(foodMeal in MEALS)) foodMeal="now";
+function mealNow(){const h=new Date().getHours();return h>=5&&h<10?"sang":h>=10&&h<14?"trua":h>=14&&h<17?"anvat":h>=17&&h<22?"toi":"khuya";}
+function mealOf(){return foodMeal==="now"?mealNow():foodMeal;}
+function mealOk(d,m){
+  if(m==="anvat") return d.loai==="anvat"||d.loai==="douong";
+  if(m==="trangmieng") return d.loai==="trangmieng";
+  return d.bua.includes(m)&&d.loai!=="trangmieng"&&d.loai!=="douong";
+}
+// Page indexes matching the filters; drop the meal first, then the cuisine, if nothing matches
+function foodPool(){
+  const P=CH.an.pages, m=mealOf(), cuOk=d=>!foodCu.length||foodCu.includes(d.am_thuc);
+  const pick=f=>P.reduce((a,d,i)=>(f(d)&&a.push(i),a),[]);
+  let idx=pick(d=>cuOk(d)&&mealOk(d,m)), relaxed=false;
+  if(!idx.length){relaxed=true; idx=pick(cuOk);}
+  if(!idx.length) idx=P.map((_,i)=>i);
+  return {idx,relaxed,meal:m};
+}
+function filterKey(){return foodCu.slice().sort().join(",")+"|"+mealOf();}
+function fchip(label,data,onClick){
+  const b=document.createElement("button"); b.type="button"; b.className="fchip"; b.textContent=label;
+  Object.assign(b.dataset,data); b.addEventListener("click",onClick); return b;
+}
+$("cuisines").appendChild(fchip("Bất kỳ",{cu:"any"},()=>{foodCu=[];store.set("str-an-cuisines",foodCu);syncFilters();}));
+for(const k in CUISINES) $("cuisines").appendChild(fchip(CUISINES[k],{cu:k},()=>{
+  foodCu=foodCu.includes(k)?foodCu.filter(x=>x!==k):[...foodCu,k];
+  if(foodCu.length===Object.keys(CUISINES).length) foodCu=[];
+  store.set("str-an-cuisines",foodCu); syncFilters();
+}));
+for(const k in MEALS) $("meals").appendChild(fchip(MEALS[k],{meal:k},()=>{foodMeal=k;store.set("str-an-meal",k);syncFilters();}));
+function syncFilters(){
+  const show=resolved()==="an"; $("filters").hidden=!show;
+  if(!show) return;
+  document.querySelectorAll("#cuisines .fchip").forEach(b=>b.setAttribute("aria-pressed",b.dataset.cu==="any"?!foodCu.length:foodCu.includes(b.dataset.cu)));
+  document.querySelectorAll("#meals .fchip").forEach(b=>b.setAttribute("aria-pressed",b.dataset.meal===foodMeal));
+  if(chapter!=="an") return;
+  const f=foodPool();
+  $("guess").textContent=CH.an.pages.length+" món trong chương này · "+(f.relaxed?"không món nào hợp bộ lọc, sách sẽ gợi ý món gần nhất":f.idx.length+" món hợp bộ lọc")+(foodMeal==="now"?" · giờ này hợp "+(MEAL_SAY[f.meal]):"");
+}
 
 /* ---------- Sound: short filtered noise burst ---------- */
 let actx=null;
@@ -310,28 +380,39 @@ async function open(mode){
     if(question.toLowerCase()===repeat.q) repeat.n++; else repeat={q:question.toLowerCase(),n:1};
     if(repeat.n>=3){grumpy=true; repeat.n=0;}
   }
-  if(daily){ idx=hashStr(todayKey()+k)%c.pages.length; }
-  else{ do{idx=Math.floor(Math.random()*c.pages.length);}while(idx===lastIdx && c.pages.length>1); }
+  const food=k==="an"?foodPool():null, pool=food&&food.idx;
+  if(daily){ idx=pool?pool[hashStr(todayKey()+k+filterKey())%pool.length]:hashStr(todayKey()+k)%c.pages.length; }
+  else{ const n=pool?pool.length:c.pages.length; let j; do{j=Math.floor(Math.random()*n);idx=pool?pool[j]:j;}while(idx===lastIdx && n>1); }
   lastIdx=idx;
-  text=grumpy?GRUMPY[Math.floor(Math.random()*GRUMPY.length)]:c.pages[idx];
+  const grumps=food&&GRUMPY_AN.length&&Math.random()<2/3?GRUMPY_AN:GRUMPY;
+  const dish=food&&!grumpy?c.pages[idx]:null;
+  text=grumpy?grumps[Math.floor(Math.random()*grumps.length)]:dish?dish.ten:c.pages[idx];
   const page=idx+1;
+  ["dishMeta","dishDesc","dishNote"].forEach(id=>$(id).hidden=true);
 
   ans.classList.add("fade"); book.classList.add("open");
   await flip(5+Math.floor(Math.random()*4));
 
   $("runL").textContent="Chương · "+c.name;
   const d=new Date();
-  $("qShow").textContent=daily?"Trang của ngày "+d.getDate()+"/"+(d.getMonth()+1)+(question?" · "+question:""):(question||"Câu hỏi được giữ trong im lặng.");
+  $("qShow").textContent=daily?"Trang của ngày "+d.getDate()+"/"+(d.getMonth()+1)+(question?" · "+question:""):(question||(food?"Hôm nay ăn gì?":"Câu hỏi được giữ trong im lặng."));
   $("folioL").textContent=page>1?page-1:"·"; $("folioR").textContent=grumpy?"?":page;
   $("seal").textContent=grumpy?"Cáu":c.seal;
   const seed=rng(hashStr(k+page+(daily?todayKey():"")));
   $("lucky").textContent=grumpy?"":"Số may "+(1+Math.floor(seed()*99));
   const words=text.trim().split(/\s+/).length;
   ans.classList.remove("mid","long");
-  if(words>20) ans.classList.add("long"); else if(words>=12) ans.classList.add("mid");
+  if(dish){ const n=[...text].length; if(n>36) ans.classList.add("long"); else if(n>28) ans.classList.add("mid"); } // long dish names shrink
+  else if(words>20) ans.classList.add("long"); else if(words>=12) ans.classList.add("mid");
   ans.textContent=text; ans.classList.remove("fade");
+  if(dish){
+    $("dishMeta").textContent=[dish.goc,CUISINES[dish.am_thuc],dish.vung].filter(Boolean).join(" · ");
+    $("dishDesc").textContent=dish.mo_ta;
+    $("dishNote").textContent="Không có món hợp bộ lọc, sách gợi ý món gần nhất.";
+    $("dishMeta").hidden=$("dishDesc").hidden=false; $("dishNote").hidden=!food.relaxed;
+  }
 
-  current={a:text,page:grumpy?"?":page,ch:c.name,q:question,daily};
+  current={a:dish?dish.ten+" · "+CUISINES[dish.am_thuc]:text,page:grumpy?"?":page,ch:c.name,q:question,daily,dish:dish&&{ten:dish.ten,goc:dish.goc,mo_ta:dish.mo_ta}};
   if(!grumpy){history.unshift(current); history=history.slice(0,20); store.set("str-history",history);}
   renderLog(); busy=false; setButtons(false);
 }
@@ -361,7 +442,8 @@ $("close").addEventListener("click",()=>{ book.classList.remove("open"); q.value
 $("copy").addEventListener("click",()=>{
   const btn=$("copy");
   if(!current){btn.textContent="Mở sách trước đã";setTimeout(()=>btn.textContent="Chép câu trả lời",1400);return;}
-  const t="Sách Trả Lời · "+current.ch+" · tr. "+current.page+(current.q?"\nHỏi: "+current.q:"")+"\nĐáp: "+current.a;
+  const t=current.dish?"Sách Trả Lời · "+current.ch+" · tr. "+current.page+"\nHôm nay ăn: "+current.dish.ten+(current.dish.goc?" ("+current.dish.goc+")":"")+"\n"+current.dish.mo_ta
+    :"Sách Trả Lời · "+current.ch+" · tr. "+current.page+(current.q?"\nHỏi: "+current.q:"")+"\nĐáp: "+current.a;
   const done=()=>{btn.textContent="Đã chép";setTimeout(()=>btn.textContent="Chép câu trả lời",1400);};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,()=>fallback(t,done));}else fallback(t,done);
 });

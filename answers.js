@@ -1,6 +1,7 @@
 /* Kho câu trả lời của Sách Trả Lời.
    Mỗi chương có solo (câu trọn vẹn) và advice (lời khuyên). Trang của chương gồm solo, advice
    và mọi cách ghép VERDICTS + " " + advice. Chương Tổng hợp gồm GENERAL và solo của mọi chương.
+   GRUMPY_AN là câu cáu riêng của chương Ẩm thực (món ăn nằm trong dishes.js).
    Sửa xong chạy: node scripts/check.js */
 window.SACH_DATA = {
 VERDICTS: [
@@ -5881,5 +5882,19 @@ GRUMPY: [
   "Câu trả lời đã nằm trong lịch sử, kéo xuống mà xem.",
   "Sách khuyên bạn tin vào lần hỏi đầu tiên.",
   "Đọc lại câu cũ chậm hơn một chút đi."
+],
+GRUMPY_AN: [
+  "Đổi món ba lần rồi. Ăn mì gói đi.",
+  "Hỏi mãi thì bụng vẫn đói thôi.",
+  "Món nào gần nhà nhất thì ăn món đó.",
+  "Ba lần rồi, nồi cơm cũng nguội mất.",
+  "Chọn đại một món đi, đói lâu dễ cáu lắm.",
+  "Sách đói giùm bạn luôn rồi đấy.",
+  "Thôi, trứng chiên với cơm trắng. Hết bàn.",
+  "Mở tủ lạnh ra, món đầu tiên bạn thấy chính là câu trả lời.",
+  "Kén chọn thế này thì tự vào bếp mà nấu.",
+  "Hỏi lần nữa là sách gọi cháo trắng cho đấy.",
+  "Ăn gì cũng được, miễn là ăn ngay bây giờ.",
+  "Trang thực đơn này sắp dính dầu mỡ vì bạn lật nhiều quá."
 ]
 };
